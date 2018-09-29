@@ -112,7 +112,8 @@ class AliceDialog:
             self.user_storage["conversation"] = None
             self.user_storage["state"] = 0
             self.user_storage["content"] = []
-            self.response.set_text("Приветствуем, ... можете ")  # TODO исправить вывод
+            self.response.set_text("Этот навык позволит вам оперативно опубликовывать"
+                                   " экологические проблемы города, а также получать информацию по ним.")
             return self.response
 
         if self.user_storage["conversation"] is None:
@@ -127,7 +128,7 @@ class AliceDialog:
             else:
                 input_functions = self.user_storage["conversation"]
                 state = self.user_storage["state"]
-                input_functions[state]()  # Запускаем функцию из очереди
+                self.conversations[input_functions][state]()  # Запускаем функцию из очереди
 
         return self.response
 
