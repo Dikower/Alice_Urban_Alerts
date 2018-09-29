@@ -1,10 +1,10 @@
 from __future__ import unicode_literals
-import json
 import logging
 import requests
 from alice_sdk import AliceRequest, AliceResponse
 from api import UserApi, ServerResponse
 from flask import Flask, request
+
 app = Flask(__name__)
 logging.basicConfig(format='[%(asctime)s][%(levelname)s] - %(message)s',
                     level=logging.INFO)
@@ -21,13 +21,13 @@ class AliceDialog:
             "new": {
                 0: self.get_description,
                 1: self.get_tags,
-                },
+            },
             "nearest": {
                 0: self.get_address,
                 1: self.get_type,
-                },
+            },
 
-            }
+        }
 
     def parse_message(self, message: str):
         meanings = {"профиль": "profile", "новые": "new", "близжайшие": "nearest", "статистика": "stats"}
@@ -118,7 +118,7 @@ class AliceDialog:
             return self.response
 
         if self.user_storage["conversation"] is None:
-            message = self.request.command.lower().strip()#.replace()
+            message = self.request.command.lower().strip()  # .replace()
             # Предобработка message
             meaning = self.parse_message(message)
             self.execute(meaning)
@@ -135,13 +135,10 @@ class AliceDialog:
 
 
 users = {}
-with open("users.json", "w", encoding="utf8") as file:
-    json.dump(users, fp=file)
+
 
 @app.route("/", methods=["POST"])
 def post():
-    with open("users.json", encoding="utf8") as file:
-        users = json.loads(file.read())
     alice_request = AliceRequest(request.json)
     user_id = alice_request.user_id
 
@@ -151,10 +148,7 @@ def post():
     alice_response = users[user_id].handle_dialog(alice_request)
     if alice_response.is_end:
         users.pop(user_id)
-    
-    with open("users.json", "w", encoding="utf8") as file:
-        json.dump(users, fp=file)
-    
+
     return alice_response.dumps()
 
 
