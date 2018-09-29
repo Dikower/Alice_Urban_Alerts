@@ -17,6 +17,7 @@ class AliceDialog:
         self.api = UserApi("our_server.com")
         self.request = None
         self.response = None
+        self.tags = ["урбанистика", "общество", "экология"]
         self.conversations = {
             "new": {
                 0: self.get_description,
@@ -29,18 +30,20 @@ class AliceDialog:
 
         }
 
+    # Анализ сообщений для соотнесения с ключевыми словами
     def parse_message(self, message: str):
         meanings = {"профиль": "profile", "новые": "new", "близжайшие": "nearest", "статистика": "stats"}
         meaning = meanings[message.split()[0]]  # TODO обработку сообщений
         return meaning
 
+    # Выполнение на основании ключевых слов
     def execute(self, meaning: str):
         if meaning == "profile":
             response = self.api.user_profile(self.request.user_id, "alice")
             if response.status:
                 self.response.set_text(f"{response.text}")
         elif meaning == "new":
-            self.response.set_text("Загрузите картинку...")  # TODO исправить вывод
+            self.response.set_text("Дайте описание проблемы")
             self.user_storage["conversation"] = "new"
 
         elif meaning == "nearest":
@@ -58,52 +61,63 @@ class AliceDialog:
         elif meaning == "problems/active":
             pass
 
+    # Сброс диалоговых переменных
     def reset_conversation(self):
         self.user_storage["conversation"] = None
         self.user_storage["state"] = 0
         self.user_storage["content"] = []
 
+    # Функции для ConvHandler new
+    # ==================================================================================================================
     def get_description(self):
         self.user_storage["state"] += 1
         self.user_storage["content"].append(self.request.command)
-        self.response.set_text("Добавьте теги, пример: ямы дыры асфальт")  # TODO исправить вывод
+        self.response.set_text(f"Добавьте теги, доступные: {', '.join(self.tags)}.")  # TODO исправить вывод
 
     def get_tags(self):
-        try:
-            tags = self.request.command.split()
-            self.user_storage["state"] += 1
-            self.user_storage["content"].append(tags)
+        tags = self.request.command.lower().split()
+        self.user_storage["state"] += 1
 
+        correct = True
+        for tag in tags:
+            if tag not in self.tags:
+                correct = False
+                break
+        if correct:
+            self.user_storage["content"].append(tags)
             photo, descr, tags = self.user_storage["content"]
             response = self.api.problem_new(photo, descr, tags)
-            if not response.status:
-                got_good_response = False
-                for _ in range(5):
-                    response = self.api.problem_new(photo, descr, tags)
-                    if response.status:
-                        got_good_response = True
-                        break
-                if not got_good_response:
-                    self.response.set_text(
-                        "Не удалось разместить объявление. Попробуйте что-нибудь ввести позднее.")  # TODO исправить вывод
-                else:
-                    self.response.set_text("Успешно опубликовано")
-                    self.reset_conversation()
-            else:
-                self.response.set_text("Успешно опубликовано")
-                self.reset_conversation()
-        except:
-            self.response.set_text("Укажите теги через пробел, формат: tag1 tag2")  # TODO исправить вывод
+            self.response.set_text(response.text)  # TODO response.text from api
+            self.reset_conversation()
+        else:
+            self.response.set_text(f"Выберите теги из {', '.join(self.tags)}")
+    # ==================================================================================================================
 
+    # Функции для ConvHandler nearest
+    # ==================================================================================================================
     def get_address(self):
         self.user_storage["state"] += 1
         self.user_storage["content"].append(self.request.command)
-        self.response.set_text("Назовите тип проблем, который вас интересует")  # TODO исправить вывод
+        self.response.set_text("Назовите теги, которые вас интересуют.")
 
     def get_type(self):
         self.user_storage["state"] += 1
-        self.user_storage["content"].append(self.request.command)
-
+        tags = self.request.command.lower()
+        correct = True
+        for tag in tags:
+            if tag not in self.tags:
+                correct = False
+                break
+        if correct:
+            self.user_storage["content"].append(self.request.command)
+            self.api.problem_nearest()  # TODO
+            self.response.set_text("")
+            self.reset_conversation()
+        else:
+            self.response.set_text(f"Выберите теги из {', '.join(self.tags)}")
+    # ==================================================================================================================
+    #
+    # Основной обработчик
     def handle_dialog(self, request: AliceRequest) -> AliceResponse:  # alice_request, alice_response, session_storage
         self.request = request
         logger.info(request)
@@ -125,7 +139,7 @@ class AliceDialog:
         else:
             if self.request.command.lower().strip() == "отмена":
                 self.reset_conversation()
-                self.response.set_text("Действие отменено")  # TODO исправить вывод
+                self.response.set_text("Действие отменено")
             else:
                 input_functions = self.user_storage["conversation"]
                 state = self.user_storage["state"]
