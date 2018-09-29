@@ -136,7 +136,7 @@ class AliceDialog:
 
 users = {}
 with open("users.json", "w", encoding="utf8") as file:
-    json.dump(session_storage, fp=file)
+    json.dump(users, fp=file)
 
 @app.route("/", methods=["POST"])
 def post():
