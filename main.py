@@ -1,4 +1,5 @@
 from __future__ import unicode_literals
+import json
 import logging
 import requests
 from alice_sdk import AliceRequest, AliceResponse
@@ -134,9 +135,13 @@ class AliceDialog:
 
 
 users = {}
+with open("users.json", "w", encoding="utf8") as file:
+    json.dump(session_storage, fp=file)
 
 @app.route("/", methods=["POST"])
 def post():
+    with open("users.json", encoding="utf8") as file:
+        users = json.loads(file.read())
     alice_request = AliceRequest(request.json)
     user_id = alice_request.user_id
 
@@ -146,7 +151,10 @@ def post():
     alice_response = users[user_id].handle_dialog(alice_request)
     if alice_response.is_end:
         users.pop(user_id)
-
+    
+    with open("users.json", "w", encoding="utf8") as file:
+        json.dump(session_storage, fp=file)
+    
     return alice_response.dumps()
 
 
