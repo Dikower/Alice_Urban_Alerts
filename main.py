@@ -116,7 +116,7 @@ class AliceDialog:
         else:
             self.response.set_text(f"Выберите теги из {', '.join(self.tags)}")
     # ==================================================================================================================
-    #
+    
     # Основной обработчик
     def handle_dialog(self, request: AliceRequest) -> AliceResponse:  # alice_request, alice_response, session_storage
         self.request = request
