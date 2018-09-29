@@ -2,10 +2,10 @@ from __future__ import unicode_literals
 import logging
 import requests
 from alice_sdk import AliceRequest, AliceResponse
-from api import UserApi, ServerResponse
+from Api.user.api import UserApi, ServerResponse
 from flask import Flask, request
 app = Flask(__name__)
-logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s',
+logging.basicConfig(format='[%(asctime)s][%(levelname)s] - %(message)s',
                     level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -132,6 +132,8 @@ class AliceDialog:
         return self.response
 
 
+users = {}
+
 @app.route("/", methods=["POST"])
 def post():
     alice_request = AliceRequest(request.json)
@@ -148,5 +150,4 @@ def post():
 
 
 if __name__ == '__main__':
-    users = {}
     app.run()
