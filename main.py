@@ -2,7 +2,7 @@ from __future__ import unicode_literals
 import logging
 import requests
 from alice_sdk import AliceRequest, AliceResponse
-from Api.user.api import UserApi, ServerResponse
+from api import UserApi, ServerResponse
 from flask import Flask, request
 app = Flask(__name__)
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s',
