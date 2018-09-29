@@ -153,7 +153,7 @@ def post():
         users.pop(user_id)
     
     with open("users.json", "w", encoding="utf8") as file:
-        json.dump(session_storage, fp=file)
+        json.dump(users, fp=file)
     
     return alice_response.dumps()
 
