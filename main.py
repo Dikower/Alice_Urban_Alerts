@@ -1,3 +1,4 @@
+import pickle
 import logging
 from alice_sdk import AliceRequest, AliceResponse
 from api import UserApi, ServerResponse
@@ -34,36 +35,38 @@ class AliceDialog:
 
     # Анализ сообщений для соотнесения с ключевыми словами
     def parse_message(self, message: str):
-        meanings = {"профиль": "profile", "новые": "new_problem", "близжайшие": "nearest", "статистика": "stats"}
+        meanings = {"профиль": "profile", "новое": "new_problem", "близжайшие": "nearest", "статистика": "stats"}
         meaning = meanings[message.split()[0]]  # TODO обработку сообщений
         return meaning
 
     # Выполнение на основании ключевых слов
     def execute(self, meaning: str):
-        if meaning == "profile":
+        message = ""
+        # if meaning == "profile":
             # response = self.api.user_profile(self.request.user_id, "alice")
-            pass
+            # pass
             # if response.status:
             #     self.response.set_text(f"{response.text}")
-        elif meaning == "new_problem":
-            self.response.set_text("Дайте название проблемы")
+        if meaning == "new_problem":
+            message = "Дайте название проблеме"
             self.user_storage["conversation"] = "new_problem"
 
         elif meaning == "nearest":
+            message = "Назовите адресс"
             self.user_storage["conversation"] = "nearest"
-            self.response.set_text("Назовите адресс")  # TODO исправить вывод
 
-        elif meaning == "stats":
-            pass
-        elif meaning == "comments/add":
-            pass
-        elif meaning == "problems/solved":
-            pass
-        elif meaning == "problems/all":
-            pass
-        elif meaning == "problems/active":
-            pass
-
+        # elif meaning == "stats":
+        #     pass
+        # elif meaning == "comments/add":
+        #     pass
+        # elif meaning == "problems/solved":
+        #     pass
+        # elif meaning == "problems/all":
+        #     pass
+        # elif meaning == "problems/active":
+        #     pass
+        self.response = 'Если хотите прервать действие скажите/введите "Отмена". ' + message 
+    
     # Сброс диалоговых переменных
     def reset_conversation(self):
         self.user_storage["conversation"] = None
@@ -96,7 +99,8 @@ class AliceDialog:
             title, description, address = self.user_storage["content"]  # tag уже присутствует как локальная переменная
 
             response = self.api.problem_new(title=title, description=description, tag=tag, address=address)
-            self.response.set_text(response.text)  # TODO response.text from api
+            logger.info(response)
+            self.response.set_text(response.text)
             self.reset_conversation()
         else:
             self.response.set_text(f"Выберите один тег из доступных {', '.join(self.tags)}")
@@ -130,8 +134,9 @@ class AliceDialog:
             self.user_storage["conversation"] = None
             self.user_storage["state"] = 0
             self.user_storage["content"] = []
-            self.response.set_text("Этот навык позволит вам оперативно опубликовывать"
-                                   " экологические проблемы города, а также получать информацию по ним.")
+            self.response.set_text('Этот навык позволит вам оперативно опубликовывать '
+                                   'экологические проблемы города, а также получать информацию по ним. '
+                                   'Чтобы опубликовать проблему, скажите или введите "Новое"')
             return self.response
 
         if self.user_storage["conversation"] is None:
@@ -152,10 +157,15 @@ class AliceDialog:
 
 
 users = {}
+with open('users.pickle', 'w') as file:
+    pickle.dump(users, file)
 
 
 @app.route("/", methods=["POST"])
 def post():
+    with open('users.pickle', 'r') as file:
+        users = pickle.load(file)
+        
     alice_request = AliceRequest(request.json)
     user_id = alice_request.user_id
 
@@ -165,6 +175,9 @@ def post():
     alice_response = users[user_id].handle_dialog(alice_request)
     if alice_response.is_end:
         users.pop(user_id)
+
+    with open('users.pickle', 'w') as file:
+        pickle.dump(users, file)
 
     return alice_response.dumps()
 
