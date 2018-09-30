@@ -69,6 +69,7 @@ class AliceDialog:
             self.response.set_text(f"Введите/скажите что-нибудь из списка: {', '.join(self.meanings)}")
         else:
             self.response.set_text(message)
+
     # Сброс диалоговых переменных
     def reset_conversation(self):
         self.user_storage["conversation"] = None
@@ -93,7 +94,7 @@ class AliceDialog:
         self.user_storage["content"].append(self.request.command)
         self.response.set_text(f"Выберите один тег, подходящий для вашей проблемы, нажав на кнопку.")
         buttons = []
-        for button in self.tags.keys():
+        for button in self.tags.values():
             buttons.append({"title": button,
                             "payload": {"pressed": True, "button": button},
                             "hide": True})
