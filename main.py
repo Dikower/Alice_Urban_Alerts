@@ -1,6 +1,4 @@
-from __future__ import unicode_literals
 import logging
-import requests
 from alice_sdk import AliceRequest, AliceResponse
 from api import UserApi, ServerResponse
 from flask import Flask, request
@@ -14,37 +12,42 @@ logger = logging.getLogger(__name__)
 class AliceDialog:
     def __init__(self):
         self.user_storage = {}
-        self.api = UserApi("our_server.com")
+        self.api = UserApi('http://192.168.43.232:8000', 'alice')
         self.request = None
         self.response = None
-        self.tags = ["урбанистика", "общество", "экология"]
+        self.tags = ["urban", "social", "eco"]
         self.conversations = {
-            "new": {
-                0: self.get_description,
-                1: self.get_tags,
+            "new_problem": {
+                0: self.get_title,
+                1: self.get_description,
+                2: self.get_address,
+                3: self.get_tag
             },
             "nearest": {
                 0: self.get_address,
                 1: self.get_type,
             },
+            "new_": {
+            }
 
         }
 
     # Анализ сообщений для соотнесения с ключевыми словами
     def parse_message(self, message: str):
-        meanings = {"профиль": "profile", "новые": "new", "близжайшие": "nearest", "статистика": "stats"}
+        meanings = {"профиль": "profile", "новые": "new_problem", "близжайшие": "nearest", "статистика": "stats"}
         meaning = meanings[message.split()[0]]  # TODO обработку сообщений
         return meaning
 
     # Выполнение на основании ключевых слов
     def execute(self, meaning: str):
         if meaning == "profile":
-            response = self.api.user_profile(self.request.user_id, "alice")
-            if response.status:
-                self.response.set_text(f"{response.text}")
-        elif meaning == "new":
-            self.response.set_text("Дайте описание проблемы")
-            self.user_storage["conversation"] = "new"
+            # response = self.api.user_profile(self.request.user_id, "alice")
+            pass
+            # if response.status:
+            #     self.response.set_text(f"{response.text}")
+        elif meaning == "new_problem":
+            self.response.set_text("Дайте название проблемы")
+            self.user_storage["conversation"] = "new_problem"
 
         elif meaning == "nearest":
             self.user_storage["conversation"] = "nearest"
@@ -69,37 +72,37 @@ class AliceDialog:
 
     # Функции для ConvHandler new
     # ==================================================================================================================
+    def get_title(self):
+        self.user_storage["state"] += 1
+        self.user_storage["content"].append(self.request.command)
+        self.response.set_text("Дайте описание проблемы")
+
     def get_description(self):
         self.user_storage["state"] += 1
         self.user_storage["content"].append(self.request.command)
-        self.response.set_text(f"Добавьте теги, доступные: {', '.join(self.tags)}.")  # TODO исправить вывод
+        self.response.set_text("Назовите адресс места с этой проблемой")
 
-    def get_tags(self):
-        tags = self.request.command.lower().split()
-        self.user_storage["state"] += 1
-
-        correct = True
-        for tag in tags:
-            if tag not in self.tags:
-                correct = False
-                break
-        if correct:
-            self.user_storage["content"].append(tags)
-            photo, descr, tags = self.user_storage["content"]
-            response = self.api.problem_new(photo, descr, tags)
-            self.response.set_text(response.text)  # TODO response.text from api
-            self.reset_conversation()
-        else:
-            self.response.set_text(f"Выберите теги из {', '.join(self.tags)}")
-    # ==================================================================================================================
-
-    # Функции для ConvHandler nearest
-    # ==================================================================================================================
     def get_address(self):
         self.user_storage["state"] += 1
         self.user_storage["content"].append(self.request.command)
-        self.response.set_text("Назовите теги, которые вас интересуют.")
+        self.response.set_text(f"Выберите один тег, подходящий для вашей проблемы, "
+                               f"доступные: {', '.join(self.tags)}.")
 
+    def get_tag(self):
+        tag = self.request.command.lower().split()
+        self.user_storage["state"] += 1
+
+        if tag in self.tags:
+            title, description, address = self.user_storage["content"]  # tag уже присутствует как локальная переменная
+
+            response = self.api.problem_new(title=title, description=description, tag=tag, address=address)
+            self.response.set_text(response.text)  # TODO response.text from api
+            self.reset_conversation()
+        else:
+            self.response.set_text(f"Выберите один тег из доступных {', '.join(self.tags)}")
+
+    # Функции для ConvHandler nearest
+    # ==================================================================================================================
     def get_type(self):
         self.user_storage["state"] += 1
         tags = self.request.command.lower()
@@ -116,7 +119,7 @@ class AliceDialog:
         else:
             self.response.set_text(f"Выберите теги из {', '.join(self.tags)}")
     # ==================================================================================================================
-    
+
     # Основной обработчик
     def handle_dialog(self, request: AliceRequest) -> AliceResponse:  # alice_request, alice_response, session_storage
         self.request = request
