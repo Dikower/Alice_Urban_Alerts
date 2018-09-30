@@ -99,7 +99,7 @@ class AliceDialog:
         self.response.set_buttons(buttons)
 
     def get_tag(self):
-        tag = self.tags[self.request["payload"]["button"]]
+        tag = self.request.payload["button"]
         title, description, address = self.user_storage["content"]  # tag уже присутствует как локальная переменная
         response = self.api.problem_new(title, description, tag, address)
         logger.info(response)
@@ -158,7 +158,7 @@ class AliceDialog:
             input_functions = self.user_storage["conversation"]
             state = self.user_storage["state"]
             self.conversations[input_functions][state]()  # Запускаем функцию из очереди
-            
+
         return self.response
 
 
