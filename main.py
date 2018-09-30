@@ -65,8 +65,8 @@ class AliceDialog:
         #     pass
         # elif meaning == "problems/active":
         #     pass
-        self.response = 'Если хотите прервать действие скажите/введите "Отмена". ' + message 
-    
+        self.response = 'Если хотите прервать действие скажите/введите "Отмена". ' + message
+
     # Сброс диалоговых переменных
     def reset_conversation(self):
         self.user_storage["conversation"] = None
@@ -157,13 +157,13 @@ class AliceDialog:
 
 
 users = {}
-with open('users.pickle', 'w') as file:
+with open('users.pickle', 'wb') as file:
     pickle.dump(users, file)
 
 
 @app.route("/", methods=["POST"])
 def post():
-    with open('users.pickle', 'r') as file:
+    with open('users.pickle', 'rb') as file:
         users = pickle.load(file)
         
     alice_request = AliceRequest(request.json)
@@ -176,7 +176,7 @@ def post():
     if alice_response.is_end:
         users.pop(user_id)
 
-    with open('users.pickle', 'w') as file:
+    with open('users.pickle', 'wb') as file:
         pickle.dump(users, file)
 
     return alice_response.dumps()
