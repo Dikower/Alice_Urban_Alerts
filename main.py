@@ -92,20 +92,17 @@ class AliceDialog:
         buttons = []
         for button in self.tags:
             buttons.append({"title": button,
-                            "payload": {"pressed": True, "button": button, "command": button},
+                            "payload": {"pressed": True, "button": button},
                             "hide": True})
         self.response.set_buttons(buttons)
 
     def get_tag(self):
-        tag = self.request.command.capitalize()
-        if tag in self.tags:
-            title, description, address = self.user_storage["content"]  # tag уже присутствует как локальная переменная
-            response = self.api.problem_new(title, description, tag, address)
-            logger.info(response)
-            self.response.set_text(response.text)
-            self.reset_conversation()
-        else:
-            self.response.set_text(f"Выберите один тег из доступных {', '.join(self.tags)}")
+        tag = self.request["payload"]["button"]
+        title, description, address = self.user_storage["content"]  # tag уже присутствует как локальная переменная
+        response = self.api.problem_new(title, description, tag, address)
+        logger.info(response)
+        self.response.set_text(response.text)
+        self.reset_conversation()
 
     # Функции для ConvHandler nearest
     # ==================================================================================================================
@@ -141,20 +138,24 @@ class AliceDialog:
                                    'Чтобы опубликовать проблему, скажите или введите "Новое".')
             return self.response
 
-        if self.user_storage["conversation"] is None:
-            message = self.request.command.lower().strip()  # .replace()
-            # Предобработка message
-            meaning = self.parse_message(message)
-            self.execute(meaning)
-        else:
-            if self.request.command.lower().strip() == "отмена":
-                self.reset_conversation()
-                self.response.set_text("Действие отменено")
+        if "command" in self.request:
+            if self.user_storage["conversation"] is None:
+                message = self.request.command.lower().strip()  # .replace()
+                # Предобработка message
+                meaning = self.parse_message(message)
+                self.execute(meaning)
             else:
-                input_functions = self.user_storage["conversation"]
-                state = self.user_storage["state"]
-                self.conversations[input_functions][state]()  # Запускаем функцию из очереди
-
+                if self.request.command.lower().strip() == "отмена":
+                    self.reset_conversation()
+                    self.response.set_text("Действие отменено")
+                else:
+                    input_functions = self.user_storage["conversation"]
+                    state = self.user_storage["state"]
+                    self.conversations[input_functions][state]()  # Запускаем функцию из очереди
+        else:
+            input_functions = self.user_storage["conversation"]
+            state = self.user_storage["state"]
+            self.conversations[input_functions][state]()  # Запускаем функцию из очереди
         return self.response
 
 
