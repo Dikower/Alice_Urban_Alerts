@@ -16,7 +16,7 @@ class AliceDialog:
         self.api = UserApi('http://urbanalerts.ml', 'alice')
         self.request = None
         self.response = None
-        self.tags = ["urban", "social", "eco"]
+        self.tags = ["Urban", "Social", "Eco"]
         self.conversations = {
             "new_problem": {
                 0: self.get_title,
