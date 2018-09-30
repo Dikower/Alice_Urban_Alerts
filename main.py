@@ -138,7 +138,7 @@ class AliceDialog:
                                    'Чтобы опубликовать проблему, скажите или введите "Новое".')
             return self.response
 
-        if "command" in self.request:
+        if "command" in self.request._request_dict:
             if self.user_storage["conversation"] is None:
                 message = self.request.command.lower().strip()  # .replace()
                 # Предобработка message
