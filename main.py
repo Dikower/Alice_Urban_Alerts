@@ -17,16 +17,14 @@ class AliceDialog:
         self.request = None
         self.response = None
         self.tags = {"Урбанистика": "Urban", "Общество": "Social", "Экология": "Eco"}
+        self.meanings = {"новое": "new_problem", "проблемы": "get_problems"}
+
         self.conversations = {
             "new_problem": {
                 0: self.get_title,
                 1: self.get_description,
                 2: self.get_address,
                 3: self.get_tag
-            },
-            "nearest": {
-                0: self.get_address,
-                1: self.get_type,
             },
             "new_": {
             }
@@ -35,8 +33,11 @@ class AliceDialog:
 
     # Анализ сообщений для соотнесения с ключевыми словами
     def parse_message(self, message: str):
-        meanings = {"профиль": "profile", "новое": "new_problem", "близжайшие": "nearest", "статистика": "stats"}
-        meaning = meanings[message.split()[0]]  # TODO обработку сообщений
+        message = message.split()[0]  # TODO обработку сообщений
+        if message in self.meanings:
+           meaning = self.meanings[message]
+        else:
+            meaning = "unclassed"
         return meaning
 
     # Выполнение на основании ключевых слов
@@ -48,12 +49,12 @@ class AliceDialog:
             # if response.status:
             #     self.response.set_text(f"{response.text}")
         if meaning == "new_problem":
-            message = "Дайте название проблеме"
+            message = 'Если хотите прервать действие скажите/введите "Отмена". "Дайте название проблеме.'
             self.user_storage["conversation"] = "new_problem"
 
-        elif meaning == "nearest":
-            message = "Назовите адрес"
-            self.user_storage["conversation"] = "nearest"
+        elif meaning == "get_problems":
+            message = "."
+            self.get_problems()
 
         # elif meaning == "stats":
         #     pass
@@ -65,6 +66,8 @@ class AliceDialog:
         #     pass
         # elif meaning == "problems/active":
         #     pass
+        if meaning == "unclassed":
+            self.response.set_text(f"Введите/скажите что-нибудь из списка: {', '.join(self.meanings)}")
         self.response.set_text('Если хотите прервать действие скажите/введите "Отмена". ' + message)
 
     # Сброс диалоговых переменных
@@ -79,7 +82,7 @@ class AliceDialog:
     def get_title(self):
         self.user_storage["state"] += 1
         self.user_storage["content"].append(self.request.command)
-        self.response.set_text("Дайте описание проблемы")
+        self.response.set_text("Дайте описание проблемы.")
 
     def get_description(self):
         self.user_storage["state"] += 1
@@ -106,23 +109,16 @@ class AliceDialog:
         self.response.set_text(response.text)
         self.reset_conversation()
 
-    # Функции для ConvHandler nearest
+    # Функции для ConvHandler get problems
     # ==================================================================================================================
-    def get_type(self):
-        self.user_storage["state"] += 1
-        tags = self.request.command.lower()
-        correct = True
-        for tag in tags:
-            if tag not in self.tags:
-                correct = False
-                break
-        if correct:
-            self.user_storage["content"].append(self.request.command)
-            self.api.problem_nearest()  # TODO
-            self.response.set_text("")
-            self.reset_conversation()
-        else:
-            self.response.set_text(f"Выберите теги из {', '.join(self.tags)}")
+    def get_problems(self):
+        response = self.api.get_problems()
+        print(response)
+        problems = []
+        for problem in response.json().values():
+            print(problem)
+            problems.append(problem)
+        self.response.set_text(f"На данный момент актуальны следующие проблемы: {', '.join(problems)}")
     # ==================================================================================================================
 
     # Основной обработчик
@@ -138,7 +134,8 @@ class AliceDialog:
             self.user_storage["buttons_mode"] = False
             self.response.set_text('Этот навык позволит вам оперативно опубликовывать '
                                    'экологические проблемы города, а также получать информацию по ним. '
-                                   'Чтобы опубликовать проблему, скажите или введите "Новое".')
+                                   'Чтобы опубликовать проблему, скажите или введите "Новое", '
+                                   'чтобы получить объявления - "Проблемы".')
             return self.response
 
         if self.user_storage["conversation"] is None:
