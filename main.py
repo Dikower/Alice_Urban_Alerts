@@ -114,11 +114,8 @@ class AliceDialog:
     # ==================================================================================================================
     def get_problems(self):
         response = self.api.get_problems().text
-        print(response)
+        logger.info(response)
         problems = []
-        for problem in response:
-            print(problem)
-            problems.append(problem)
         self.response.set_text(f"На данный момент актуальны следующие проблемы: {', '.join(problems)}")
     # ==================================================================================================================
 
