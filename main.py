@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 class AliceDialog:
     def __init__(self):
         self.user_storage = {}
-        self.api = UserApi('urbanalerts.ml', 'alice')
+        self.api = UserApi('http://urbanalerts.ml', 'alice')
         self.request = None
         self.response = None
         self.tags = ["urban", "social", "eco"]
