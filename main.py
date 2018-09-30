@@ -16,7 +16,7 @@ class AliceDialog:
         self.api = UserApi('http://urbanalerts.ml', 'alice')
         self.request = None
         self.response = None
-        self.tags = ["Urban", "Social", "Eco"]
+        self.tags = {"Урбанистика": "Urban", "Общество": "Social", "Экология": "Eco"}
         self.conversations = {
             "new_problem": {
                 0: self.get_title,
@@ -72,6 +72,7 @@ class AliceDialog:
         self.user_storage["conversation"] = None
         self.user_storage["state"] = 0
         self.user_storage["content"] = []
+        self.user_storage["buttons_mode"] = False
 
     # Функции для ConvHandler new
     # ==================================================================================================================
@@ -90,14 +91,15 @@ class AliceDialog:
         self.user_storage["content"].append(self.request.command)
         self.response.set_text(f"Выберите один тег, подходящий для вашей проблемы, нажав на кнопку.")
         buttons = []
-        for button in self.tags:
+        for button in self.tags.keys():
             buttons.append({"title": button,
                             "payload": {"pressed": True, "button": button},
                             "hide": True})
+        self.user_storage["buttons_mode"] = True
         self.response.set_buttons(buttons)
 
     def get_tag(self):
-        tag = self.request["payload"]["button"]
+        tag = self.tags[self.request["payload"]["button"]]
         title, description, address = self.user_storage["content"]  # tag уже присутствует как локальная переменная
         response = self.api.problem_new(title, description, tag, address)
         logger.info(response)
@@ -133,29 +135,30 @@ class AliceDialog:
             self.user_storage["conversation"] = None
             self.user_storage["state"] = 0
             self.user_storage["content"] = []
+            self.user_storage["buttons_mode"] = False
             self.response.set_text('Этот навык позволит вам оперативно опубликовывать '
                                    'экологические проблемы города, а также получать информацию по ним. '
                                    'Чтобы опубликовать проблему, скажите или введите "Новое".')
             return self.response
 
-        if "command" in self.request._request_dict:
-            if self.user_storage["conversation"] is None:
-                message = self.request.command.lower().strip()  # .replace()
-                # Предобработка message
-                meaning = self.parse_message(message)
-                self.execute(meaning)
+        if self.user_storage["conversation"] is None:
+            message = self.request.command.lower().strip()  # .replace()
+            # Предобработка message
+            meaning = self.parse_message(message)
+            self.execute(meaning)
+        elif not self.user_storage["buttons_mode"]:
+            if self.request.command.lower().strip() == "отмена":
+                self.reset_conversation()
+                self.response.set_text("Действие отменено")
             else:
-                if self.request.command.lower().strip() == "отмена":
-                    self.reset_conversation()
-                    self.response.set_text("Действие отменено")
-                else:
-                    input_functions = self.user_storage["conversation"]
-                    state = self.user_storage["state"]
-                    self.conversations[input_functions][state]()  # Запускаем функцию из очереди
+                input_functions = self.user_storage["conversation"]
+                state = self.user_storage["state"]
+                self.conversations[input_functions][state]()  # Запускаем функцию из очереди
         else:
             input_functions = self.user_storage["conversation"]
             state = self.user_storage["state"]
             self.conversations[input_functions][state]()  # Запускаем функцию из очереди
+            
         return self.response
 
 
