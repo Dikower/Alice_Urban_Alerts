@@ -52,7 +52,7 @@ class AliceDialog:
             self.user_storage["conversation"] = "new_problem"
 
         elif meaning == "nearest":
-            message = "Назовите адресс"
+            message = "Назовите адрес"
             self.user_storage["conversation"] = "nearest"
 
         # elif meaning == "stats":
@@ -83,7 +83,7 @@ class AliceDialog:
     def get_description(self):
         self.user_storage["state"] += 1
         self.user_storage["content"].append(self.request.command)
-        self.response.set_text("Назовите адресс места с этой проблемой")
+        self.response.set_text("Назовите адрес места с этой проблемой.")
 
     def get_address(self):
         self.user_storage["state"] += 1
@@ -94,7 +94,7 @@ class AliceDialog:
             buttons.append({"title": button,
                             "payload": {"pressed": True, "button": button},
                             "hide": True})
-        self.response.set_button(buttons)
+        self.response.set_buttons(buttons)
 
     def get_tag(self):
         tag = self.request.command.capitalize()
@@ -138,7 +138,7 @@ class AliceDialog:
             self.user_storage["content"] = []
             self.response.set_text('Этот навык позволит вам оперативно опубликовывать '
                                    'экологические проблемы города, а также получать информацию по ним. '
-                                   'Чтобы опубликовать проблему, скажите или введите "Новое"')
+                                   'Чтобы опубликовать проблему, скажите или введите "Новое".')
             return self.response
 
         if self.user_storage["conversation"] is None:
