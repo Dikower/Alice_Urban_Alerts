@@ -103,7 +103,7 @@ class AliceDialog:
 
     def get_tag(self):
         tag = self.request.payload["button"]
-        logger.info("TAG", tag)
+        logger.info("TAG", str(tag))
         title, description, address = self.user_storage["content"]  # tag уже присутствует как локальная переменная
         response = self.api.problem_new(title, description, tag, address)
 
