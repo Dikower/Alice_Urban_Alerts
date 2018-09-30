@@ -92,7 +92,7 @@ class AliceDialog:
         buttons = []
         for button in self.tags:
             buttons.append({"title": button,
-                            "payload": {"pressed": True, "button": button},
+                            "payload": {"pressed": True, "button": button, "command": button},
                             "hide": True})
         self.response.set_buttons(buttons)
 
