@@ -173,7 +173,7 @@ def post():
         users[user_id] = AliceDialog()  # Создаем новый диалог
 
     alice_response = users[user_id].handle_dialog(alice_request)
-    if users.is_end:
+    if users[user_id].response.is_end:
         users.pop(user_id)
 
     with open('users.pickle', 'wb') as file:
