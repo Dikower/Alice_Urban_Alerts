@@ -88,8 +88,12 @@ class AliceDialog:
     def get_address(self):
         self.user_storage["state"] += 1
         self.user_storage["content"].append(self.request.command)
-        self.response.set_text(f"Выберите один тег, подходящий для вашей проблемы, "
-                               f"доступные: {', '.join(self.tags)}.")
+        self.response.set_text(f"Выберите один тег, подходящий для вашей проблемы, нажав на кнопку.")
+        self.response.buttons = []
+        for button in self.tags:
+            self.response.buttons.append({"title": button,
+                                          "payload": {"pressed": True, "button": button},
+                                          "hide": True})
 
     def get_tag(self):
         tag = self.request.command.capitalize()
