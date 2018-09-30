@@ -27,20 +27,20 @@ class UserApi:
         pass
 
     # ready
-    def problem_new(self, title: str, description: str, tag: str, address: str = '') -> ServerResponse:
-        url = self.base_url + '/api/problems/new'
+    def problem_new(self,title: str, description: str, tag: str, address: str = '') -> ServerResponse:
+        url = self.base_url + '/api/problems/new/'
         resp = requests.post(url, data={
             'title':       title,
             'description': description,
             'tag':         tag,
             'address':     address})
 
-        print(resp.status_code)
-        print(resp.text)
         return ServerResponse(resp)
 
-    def problem_nearest(self, address: str) -> ServerResponse:
-        pass
+    def get_problems(self) -> ServerResponse:
+        url = self.base_url + '/api/problems/'
+        resp = requests.post(url)
+        return ServerResponse(resp)
 
     def problem_add_comment(self, user_id: str, com_type: str, comment: str) -> ServerResponse:
         pass
