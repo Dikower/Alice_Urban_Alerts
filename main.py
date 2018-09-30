@@ -1,5 +1,6 @@
 import pickle
 import logging
+import json
 from alice_sdk import AliceRequest, AliceResponse
 from api import UserApi, ServerResponse
 from flask import Flask, request
@@ -107,16 +108,20 @@ class AliceDialog:
         response = self.api.problem_new(title, description, tag, address)
 
         logger.info(response)
-        self.response.set_text(response.text)
+        self.response.set_text("Успешно отмечено.")
         self.reset_conversation()
 
     # Функции для ConvHandler get problems
     # ==================================================================================================================
     def get_problems(self):
-        response = self.api.get_problems().text
-        logger.info(response)
-        problems = []
-        self.response.set_text(f"На данный момент актуальны следующие проблемы: {', '.join(problems)}")
+        response = json.loads(self.api.get_problems().text)
+        result = ""
+        lenght = len(response)
+        if len(response) > 5:
+            lenght = 5
+        for i in range(lenght):
+            result += f"{i+1} {response[i]['title']} {response[i]['description']} {response[i]['coors']}| "
+        self.response.set_text(f"На данный момент актуальны следующие проблемы: {result}")
     # ==================================================================================================================
 
     # Основной обработчик
