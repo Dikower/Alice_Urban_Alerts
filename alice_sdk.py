@@ -25,6 +25,10 @@ class AliceRequest(object):
     def command(self):
         return self._request_dict['request']['command']
 
+    @property
+    def payload(self):
+        return self._request_dict['request']['payload']
+
     def __str__(self):
         return str(self._request_dict)
     
