@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 class AliceDialog:
     def __init__(self):
         self.user_storage = {}
-        self.api = UserApi('http://192.168.43.232:8000', 'alice')
+        self.api = UserApi('urbanalerts.ml', 'alice')
         self.request = None
         self.response = None
         self.tags = ["urban", "social", "eco"]
@@ -95,9 +95,8 @@ class AliceDialog:
         tag = self.request.command.lower()
         if tag in self.tags:
             title, description, address = self.user_storage["content"]  # tag уже присутствует как локальная переменная
-            logger.info(title, description, address)
             response = self.api.problem_new(title=title, description=description, tag=tag, address=address)
-            logger.info("RESPONSE", response)
+            logger.info(response)
             self.response.set_text(response.text)
             self.reset_conversation()
         else:
