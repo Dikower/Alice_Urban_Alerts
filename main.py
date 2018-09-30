@@ -94,9 +94,9 @@ class AliceDialog:
         self.user_storage["content"].append(self.request.command)
         self.response.set_text(f"Выберите один тег, подходящий для вашей проблемы, нажав на кнопку.")
         buttons = []
-        for button in self.tags.values():
+        for button in self.tags.keys():
             buttons.append({"title": button,
-                            "payload": {"pressed": True, "button": button},
+                            "payload": {"pressed": True, "button": self.tags[button]},
                             "hide": True})
         self.user_storage["buttons_mode"] = True
         self.response.set_buttons(buttons)
