@@ -33,8 +33,8 @@ class AliceDialog:
 
     # Анализ сообщений для соотнесения с ключевыми словами
     def parse_message(self, message: str):
-        message = message.split()[0]  # TODO обработку сообщений
-        if message in self.meanings:
+        message = message.split()[0].lower()  # TODO обработку сообщений
+        if message in list(self.meanings.keys()):
            meaning = self.meanings[message]
         else:
             meaning = "unclassed"
@@ -53,7 +53,6 @@ class AliceDialog:
             self.user_storage["conversation"] = "new_problem"
 
         elif meaning == "get_problems":
-            message = "."
             self.get_problems()
 
         # elif meaning == "stats":
@@ -68,7 +67,8 @@ class AliceDialog:
         #     pass
         if meaning == "unclassed":
             self.response.set_text(f"Введите/скажите что-нибудь из списка: {', '.join(self.meanings)}")
-
+        else:
+            self.response.set_text(message)
     # Сброс диалоговых переменных
     def reset_conversation(self):
         self.user_storage["conversation"] = None
@@ -104,6 +104,7 @@ class AliceDialog:
         tag = self.request.payload["button"]
         title, description, address = self.user_storage["content"]  # tag уже присутствует как локальная переменная
         response = self.api.problem_new(title, description, tag, address)
+
         logger.info(response)
         self.response.set_text(response.text)
         self.reset_conversation()
