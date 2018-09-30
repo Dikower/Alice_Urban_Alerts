@@ -92,12 +92,9 @@ class AliceDialog:
                                f"доступные: {', '.join(self.tags)}.")
 
     def get_tag(self):
-        tag = self.request.command.lower().split()
-        self.user_storage["state"] += 1
-
+        tag = self.request.command.lower()
         if tag in self.tags:
             title, description, address = self.user_storage["content"]  # tag уже присутствует как локальная переменная
-
             response = self.api.problem_new(title=title, description=description, tag=tag, address=address)
             logger.info(response)
             self.response.set_text(response.text)
