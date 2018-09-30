@@ -27,11 +27,9 @@ class UserApi:
         pass
 
     # ready
-    def problem_new(self, token: str, title: str, photo: str, description: str, tag: str,
-                    latitude: str = '', longitude: str = '', address: str = '') -> ServerResponse:
+    def problem_new(self, title: str, description: str, tag: str, address: str = '') -> ServerResponse:
         url = self.base_url + '/api/problems/new'
         resp = requests.post(url, data={
-            'token':       f'{self.bot_type}:{token}',
             'title':       title,
             'description': description,
             'tag':         tag,
