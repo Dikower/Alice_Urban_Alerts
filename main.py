@@ -68,7 +68,6 @@ class AliceDialog:
         #     pass
         if meaning == "unclassed":
             self.response.set_text(f"Введите/скажите что-нибудь из списка: {', '.join(self.meanings)}")
-        self.response.set_text('Если хотите прервать действие скажите/введите "Отмена". ' + message)
 
     # Сброс диалоговых переменных
     def reset_conversation(self):
