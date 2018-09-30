@@ -39,7 +39,7 @@ class UserApi:
 
     def get_problems(self) -> ServerResponse:
         url = self.base_url + '/api/problems/'
-        resp = requests.post(url)
+        resp = requests.get(url)
         return ServerResponse(resp)
 
     def problem_add_comment(self, user_id: str, com_type: str, comment: str) -> ServerResponse:
