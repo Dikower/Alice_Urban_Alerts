@@ -95,8 +95,9 @@ class AliceDialog:
         tag = self.request.command.lower()
         if tag in self.tags:
             title, description, address = self.user_storage["content"]  # tag уже присутствует как локальная переменная
+            logger.info(title, description, address)
             response = self.api.problem_new(title=title, description=description, tag=tag, address=address)
-            logger.info(response)
+            logger.info("RESPONSE", response)
             self.response.set_text(response.text)
             self.reset_conversation()
         else:
