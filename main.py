@@ -65,7 +65,7 @@ class AliceDialog:
         #     pass
         # elif meaning == "problems/active":
         #     pass
-        self.response = 'Если хотите прервать действие скажите/введите "Отмена". ' + message
+        self.response.set_text('Если хотите прервать действие скажите/введите "Отмена". ' + message)
 
     # Сброс диалоговых переменных
     def reset_conversation(self):
@@ -165,7 +165,7 @@ with open('users.pickle', 'wb') as file:
 def post():
     with open('users.pickle', 'rb') as file:
         users = pickle.load(file)
-        
+
     alice_request = AliceRequest(request.json)
     user_id = alice_request.user_id
 
@@ -173,7 +173,7 @@ def post():
         users[user_id] = AliceDialog()  # Создаем новый диалог
 
     alice_response = users[user_id].handle_dialog(alice_request)
-    if alice_response.is_end:
+    if users.is_end:
         users.pop(user_id)
 
     with open('users.pickle', 'wb') as file:
